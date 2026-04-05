@@ -1,0 +1,1 @@
+export { default as DoctorPayoutList } from './DoctorPayoutList.jsx'; 

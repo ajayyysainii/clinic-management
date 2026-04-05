@@ -1,0 +1,191 @@
+import {
+  Home,
+  BarChart3,
+  Users,
+  Settings,
+  HelpCircle,
+  IndianRupee,
+  LogOut,
+  HeartPulse,
+  UserPlus,
+  UserCheck,
+  TrendingUp,
+  CreditCard,
+  Receipt,
+  Stethoscope,
+  ClipboardType,
+  UserCog,
+  ContactRound,
+  Hospital,
+  Package,
+  Wrench,
+  FileText,
+} from "lucide-react";
+
+const menuItems = [
+  {
+    id: "",
+    icon: Home,
+    label: "Dashboard",
+    roles: ["doctor", "clinic-admin", "clinic-head", "doctorAndAdmin", "admin", "superadmin","hybrid"],
+  },
+  {
+    id: "appointments",
+    icon: Hospital,
+    label: "Appointments",
+    roles: ["doctor", "clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin", "superadmin","hybrid"],
+  },
+  {
+    id: "clinics",
+    icon: Hospital,
+    label: "Clinics Onboarding",
+    roles: ["clinic-admin", "superadmin"],
+  },
+  {
+    id: "patients",
+    icon: Users,
+    label: "Patients",
+    roles: [ "clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin", "superadmin","hybrid"],
+    submenu: [
+      {
+        id: "add-patient",
+        icon: UserPlus,
+        label: "Add Patient",
+        roles: ["clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin", "hybrid"], 
+      },
+      {
+        id: "patient-list",
+        icon: UserCheck,
+        label: "Patient List",
+        roles: ["clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin", "superadmin","hybrid"],
+      },
+    ],
+  },
+  {
+    id: "doctors",
+    icon: Stethoscope,
+    label: "Doctors",
+    roles: ["clinic-admin", "clinic-head", "staff", "admin", "superadmin"],
+    submenu: [
+      {
+        id: "add-doctor",
+        icon: UserPlus,
+        label: "Add Doctor",
+        roles: ["clinic-admin", "clinic-head", "staff", "admin"],
+      },
+      {
+        id: "doctor-list",
+        icon: UserCog,
+        label: "Doctor List",
+        roles: ["clinic-admin", "clinic-head", "staff", "admin", "superadmin"],
+      },
+      {
+        id: "payout-list",
+        icon: IndianRupee,
+        label: "Payout List",
+        roles: ["clinic-admin", "clinic-head", "staff", "admin", "superadmin"],
+      },
+    ],
+  },
+  // {
+  //   id: "analytics",
+  //   icon: BarChart3,
+  //   label: "Analytics",
+  //   roles: ["clinic-admin", "clinic-head", "admin", "superadmin","hybrid"],
+  //   submenu: [
+  //     { id: "reports", icon: BarChart3, label: "Reports", roles: ["clinic-admin", "clinic-head", "admin", "superadmin","hybrid"] },
+  //     { id: "trends", icon: TrendingUp, label: "Trends", roles: ["clinic-admin", "clinic-head", "admin", "superadmin","hybrid"] },
+  //   ],
+  // },
+  {
+    id: "payment",
+    icon: IndianRupee,
+    label: "Payment",
+    roles: ["clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin", "superadmin","hybrid"],
+    submenu: [
+      {
+        id: "invoice-list",
+        icon: CreditCard,
+        label: "Invoices",
+        roles: ["clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin", "superadmin","hybrid"],
+      },
+      {
+        id: "add-invoice",
+        icon: Receipt,
+        label: "Create Invoices",
+        roles: ["clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin","hybrid"],
+      },
+      {
+        id: "gst-clinics",
+        icon: Receipt,
+        label: "GST Clinics",
+        roles: ["clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin","hybrid"],
+      },
+    ],
+  },
+  {
+    id: "Forms",
+    icon: ClipboardType,
+    label: "Forms",
+    roles: ["doctor", "doctorAndAdmin", "admin","patient","hybrid"],
+    submenu: [
+      { id: "consent/create", icon: ClipboardType, label: "Consents", roles: ["doctor", "doctorAndAdmin", "admin","hybrid"] },
+      { id: "form/referral", icon: ClipboardType, label: "Referral", roles: ["doctor", "doctorAndAdmin", "admin","hybrid"] },
+      { id: "form/certificates", icon: FileText, label: "Certificates", roles: ["doctor", "doctorAndAdmin", "admin","patient","hybrid"] },
+      { id: "form/create-certificate", icon: FileText, label: "Create Certificate", roles: ["doctor", "doctorAndAdmin", "admin","hybrid"] },
+      { id: "form/consent-list", icon: ClipboardType, label: "Consent List", roles: ["doctor", "doctorAndAdmin", "admin","patient","hybrid"] },
+      { id: "form/referral-list", icon: ClipboardType, label: "Referral List", roles: ["doctor", "doctorAndAdmin", "admin","patient","hybrid"] },
+    ],
+  },
+  {
+    id: "Staffs",
+    icon: ContactRound,
+    label: "Staffs",
+    roles: ["clinic-admin", "clinic-head", "admin", "superadmin"],
+    submenu: [
+      { id: "staffs", icon: ContactRound, label: "Add Staff", roles: ["clinic-admin", "clinic-head", "admin","hybrid"] },
+      { id: "list/staffs", icon: ContactRound, label: "Staff List", roles: ["clinic-admin", "clinic-head", "admin", "superadmin","hybrid"] },
+      { id: "staff-payout-list", icon: IndianRupee, label: "Staff Salary List", roles: ["clinic-admin", "clinic-head", "admin", "superadmin"] },
+    ],
+  },
+  {
+    id: "inventory",
+    icon: Package,
+    label: "Inventory",
+    roles: ["clinic-admin", "clinic-head", "staff", "admin", "hybrid"],
+  },
+  {
+    id: "services",
+    icon: Wrench,
+    label: "Services",
+    roles: ["clinic-admin", "clinic-head", "staff", "admin", "hybrid"],
+    submenu: [
+      {
+        id: "services-list",
+        icon: Wrench,
+        label: "Services List",
+        roles: ["clinic-admin", "clinic-head", "staff", "admin", "hybrid"],
+      },
+      {
+        id: "add-service",
+        icon: UserPlus,
+        label: "Add Service",
+        roles: ["clinic-admin", "clinic-head", "staff", "admin", "hybrid"],
+      },
+    ],
+  },
+  {
+    id: "account",
+    icon: Settings,
+    label: "Profile",
+    roles: ["doctor", "clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin", "superadmin","hybrid"  ],
+  },
+  {
+    id: "logout",
+    icon: LogOut,
+    label: "Logout",
+    roles: ["doctor", "clinic-admin", "clinic-head", "staff", "doctorAndAdmin", "admin", "superadmin","patient","hybrid"],
+  },
+];
+
+export { menuItems };

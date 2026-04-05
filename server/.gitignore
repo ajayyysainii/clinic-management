@@ -1,0 +1,10 @@
+# dependencies
+node_modules/
+dist/
+
+# environment
+.env
+
+# misc
+.DS_Store
+.vscode
