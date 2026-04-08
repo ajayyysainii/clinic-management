@@ -24,13 +24,17 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 // With credentials: true, browsers reject Access-Control-Allow-Origin: * — use an explicit list.
-const defaultOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173']
-const parsedOrigins = (process.env.ALLOWED_ORIGINS ?? '')
+// Origin values have no trailing slash (matches the browser Origin header).
+const builtInOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://clinic-management-pearl-beta.vercel.app',
+]
+const envOrigins = (process.env.ALLOWED_ORIGINS ?? '')
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean)
-const allowedOrigins =
-  parsedOrigins.length > 0 ? parsedOrigins : defaultOrigins
+const allowedOrigins = [...new Set([...builtInOrigins, ...envOrigins])]
 
 app.use(
   cors({
