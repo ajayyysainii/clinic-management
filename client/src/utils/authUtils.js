@@ -1,4 +1,5 @@
 // Authentication utilities for token management and logout handling
+import { withBasePath } from './basePath.js'
 
 /**
  * Logout utility function that clears auth token and redirects to login
@@ -11,7 +12,7 @@ export const performLogout = () => {
   window.dispatchEvent(new Event('authChange'));
   
   // Redirect to login page
-  window.location.href = "/clinic/login";
+  window.location.href = withBasePath('/login')
 };
 
 /**

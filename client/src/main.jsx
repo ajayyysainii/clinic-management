@@ -9,9 +9,12 @@ import App from './App.jsx'
 // Setup axios interceptors for automatic auth token handling
 setupAxiosInterceptors();
 
+const routerBasename =
+  import.meta.env.BASE_URL === '/' ? undefined : import.meta.env.BASE_URL.replace(/\/$/, '')
+
 createRoot(document.getElementById('root')).render(
   
-  <BrowserRouter basename='/clinic'>
+  <BrowserRouter basename={routerBasename}>
     <UserProvider>
       <StrictMode>
         <App />

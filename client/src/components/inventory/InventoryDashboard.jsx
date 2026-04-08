@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { AlertTriangle, Calendar, TrendingUp, Package, Plus, Eye, RefreshCw } from 'lucide-react';
 import { BACKEND_URL } from '../../utils/urlConstants';
+import { withBasePath } from '../../utils/basePath.js';
 import { sentenceCase } from '../../utils/sentenceCase.js';
 
 const InventoryDashboard = () => {
@@ -342,7 +343,7 @@ const InventoryDashboard = () => {
                 <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <button 
-                            onClick={() => window.location.href = '/clinic/inventory?tab=list'}
+                            onClick={() => { window.location.href = withBasePath('/inventory?tab=list'); }}
                             className="flex items-center justify-center p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
                         >
                             <Plus className="h-5 w-5 text-blue-600 mr-2" />

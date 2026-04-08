@@ -18,6 +18,7 @@ import {
   X
 } from 'lucide-react';
 import './TeleConsultation.css';
+import { withBasePath } from '../../utils/basePath.js';
 
 const TeleConsultationModal = ({ isOpen, onClose, appointment, sessionData }) => {
   const [joined, setJoined] = useState(false);
@@ -73,7 +74,7 @@ const TeleConsultationModal = ({ isOpen, onClose, appointment, sessionData }) =>
   useEffect(() => {
     if (sessionData && appointment) {
       const baseUrl = window.location.origin;
-      setInvitationLink(`${baseUrl}/clinic/teleconsultation/patient/${appointment._id}`);
+      setInvitationLink(`${baseUrl}${withBasePath(`/teleconsultation/patient/${appointment._id}`)}`);
     }
   }, [sessionData, appointment]);
 

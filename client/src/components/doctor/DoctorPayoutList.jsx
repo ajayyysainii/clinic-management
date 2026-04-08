@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../../utils/urlConstants';
+import { withBasePath } from '../../utils/basePath.js';
 import DownloadButton from '../ui/DownloadButton';
 import { Eye, IndianRupee } from 'lucide-react';
 
@@ -143,7 +144,7 @@ const DoctorPayoutList = () => {
                              return;
                            }
                            
-                           window.open(`/clinic/doctor-earnings/${doctorId}/${clinicId}`, '_blank');
+                           window.open(withBasePath(`/doctor-earnings/${doctorId}/${clinicId}`), '_blank');
                          }}
                          className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
                          title="View Daily Earnings"
