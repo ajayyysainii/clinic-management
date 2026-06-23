@@ -5,7 +5,8 @@ import ActionList from '../ActionList.jsx'
 import DownloadButton from '../ui/DownloadButton.jsx';
 import EditAppointmentPopup from '../appointment/EditAppointmentPopup.jsx';
 import TeleConsultationModal from '../teleConsultation/TeleConsultationModal.jsx';
-import { Trash2, Edit, AlertCircle, FilePlus, ClipboardPlus, Video, Phone } from 'lucide-react';
+import QuickBookingPanel from '../appointment/QuickBookingPanel.jsx';
+import { Trash2, Edit, AlertCircle, FilePlus, ClipboardPlus, Video, Phone, Pill } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { Link, useNavigate } from 'react-router-dom';
 import { BACKEND_URL } from '../../utils/urlConstants.js';
@@ -42,7 +43,7 @@ const Appointments = () => {
         }
 
         setIsExporting(true);
-        
+
         try {
             // Define CSV headers
             const headers = [
@@ -56,7 +57,7 @@ const Appointments = () => {
                 'Diagnosis'
             ];
 
-                    // Prepare CSV data
+            // Prepare CSV data
             const csvData = filteredData.map(appointment => [
                 appointment?._id || 'N/A',
                 getPatientName(appointment) || 'N/A',
@@ -81,24 +82,24 @@ const Appointments = () => {
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
-            
+
             // Generate filename with filters
             let filename = `appointments_${new Date().toISOString().split('T')[0]}`;
             if (modeFilter !== 'all') filename += `_${modeFilter}`;
             if (statusFilter !== 'all') filename += `_${statusFilter}`;
             if (searchTerm) filename += `_search_${searchTerm.substring(0, 20)}`;
             filename += '.csv';
-            
+
             link.setAttribute('href', url);
             link.setAttribute('download', filename);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Clean up the URL object
             URL.revokeObjectURL(url);
-            
+
             // Show success message
             alert(`Successfully exported ${filteredData.length} appointments to CSV`);
         } catch (error) {
@@ -167,10 +168,10 @@ const Appointments = () => {
             console.log(appointmentsData);
         } catch (err) {
             console.error('Error fetching appointments:', err);
-            
+
             // Special handling for "no completed appointments found" case
-            if (statusFilter === 'Completed' && 
-                err.response?.status === 404 && 
+            if (statusFilter === 'Completed' &&
+                err.response?.status === 404 &&
                 err.response?.data?.message === 'No completed appointments found for this clinic') {
                 // This is not an error, just no completed appointments exist
                 setData([]);
@@ -234,11 +235,11 @@ const Appointments = () => {
         try {
             const appointmentDate = new Date(dateString);
             const today = new Date();
-            
+
             // Reset time to compare only dates
             const appointmentDateOnly = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), appointmentDate.getDate());
             const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            
+
             return appointmentDateOnly.getTime() === todayOnly.getTime();
         } catch (error) {
             console.error('Error checking appointment date:', error);
@@ -497,12 +498,27 @@ const Appointments = () => {
         </div>
     );
 
-    if (loading) return <LoadingState />;
-    if (error) return <ErrorState />;
+    if (loading) return (
+        <div className="flex gap-4 items-start">
+            <QuickBookingPanel onSuccess={fetchAppointments} />
+            <div className="flex-1 min-w-0">
+                <LoadingState />
+            </div>
+        </div>
+    );
+    if (error) return (
+        <div className="flex gap-4 items-start">
+            <QuickBookingPanel onSuccess={fetchAppointments} />
+            <div className="flex-1 min-w-0">
+                <ErrorState />
+            </div>
+        </div>
+    );
 
     return (
-        <>
-            <div className="bg-white relative rounded-lg shadow-sm border pb-5 border-gray-200 overflow-hidden">
+        <div className="flex gap-4 items-start">
+            <QuickBookingPanel onSuccess={fetchAppointments} />
+            <div className="flex-1 min-w-0 bg-white relative rounded-lg shadow-sm border pb-5 border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <div className='h-16 flex items-center justify-between px-10'>
                         <div className="flex items-center gap-2">
@@ -531,7 +547,7 @@ const Appointments = () => {
                                     Tele-consultation
                                 </button>
                             </div>
-                            
+
                             {/* Status filter buttons */}
                             <div className="flex gap-2 text-nowrap">
                                 <button
@@ -552,9 +568,9 @@ const Appointments = () => {
                                 className="w-80 rounded-xl bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-gray-300 px-3 py-2 transition duration-300 ease-in-out focus:border-blue-500 hover:border-blue-300 outline-none"
                             />
                             <div className='border border-gray-200 rounded-sm p-1 hover:scale-110 transition-all duration-300'>
-                                <DownloadButton 
-                                    onDownload={handleExportCSV} 
-                                    disabled={filteredData.length === 0} 
+                                <DownloadButton
+                                    onDownload={handleExportCSV}
+                                    disabled={filteredData.length === 0}
                                     loading={isExporting}
                                 />
                             </div>
@@ -590,122 +606,132 @@ const Appointments = () => {
                             {filteredData.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                                        {statusFilter === 'Completed' ? 'No completed appointments found.' : 
-                                         searchTerm || modeFilter !== 'all' || statusFilter !== 'all' ? 'No appointments found matching your filters.' : 'No appointments found.'}
+                                        {statusFilter === 'Completed' ? 'No completed appointments found.' :
+                                            searchTerm || modeFilter !== 'all' || statusFilter !== 'all' ? 'No appointments found matching your filters.' : 'No appointments found.'}
                                     </td>
                                 </tr>
                             ) : (
                                 <>
                                     {/* Note: Appointments are sorted by most recent first */}
                                     {filteredData.map((appointment, index) => (
-                                    <tr key={appointment?._id || index} className="hover:bg-blue-100 transition-colors duration-150 border-t border-gray-200">
-                                        <td className='px-6 py-4 whitespace-nowrap'>
-                                            <div className="flex items-center">
-                                                {getPatientProfileImage(appointment) ? (
-                                                    <img
-                                                        src={getPatientProfileImage(appointment)}
-                                                        alt={getPatientName(appointment)}
-                                                        className="w-10 h-10 rounded-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <DoctorAvatar
-                                                        name={getPatientName(appointment)}
-                                                        id={index}
-                                                    />
-                                                )}
-                                                <div className="ml-4 flex items-center gap-2">
-                                                    <div className='flex flex-col'>
-                                                    <Link to={`/profile/patient/${getPatientUserId(appointment)}`}>
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {sentenceCase(getPatientName(appointment))}
-                                                        </div>
-                                                    </Link>
-                                                    <div className="text-sm text-gray-500">
-                                                        {getPatientTriage(appointment)}
-                                                    </div>
-                                                    </div>
-                                                    {appointment?.consultationMode === 'tele-consultation' && 
-                                                     appointment?.status !== 'Completed' && 
-                                                     (userRole === 'doctor' || userRole === 'hybrid') && 
-                                                     isAppointmentToday(appointment?.appointmentTime) && (
-                                                        <button
-                                                            onClick={() => handleStartTeleconsultation(appointment)}
-                                                            className="p-1 rounded-full bg-green-100 hover:bg-green-200 transition-all duration-300 group"
-                                                            title="Start Tele-consultation"
-                                                        >
-                                                            <Video className="w-4 h-4 text-green-600 group-hover:text-green-700 animate-pulse" />
-                                                        </button>
+                                        <tr key={appointment?._id || index} className="hover:bg-blue-100 transition-colors duration-150 border-t border-gray-200">
+                                            <td className='px-6 py-4 whitespace-nowrap'>
+                                                <div className="flex items-center">
+                                                    {getPatientProfileImage(appointment) ? (
+                                                        <img
+                                                            src={getPatientProfileImage(appointment)}
+                                                            alt={getPatientName(appointment)}
+                                                            className="w-10 h-10 rounded-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <DoctorAvatar
+                                                            name={getPatientName(appointment)}
+                                                            id={index}
+                                                        />
                                                     )}
-                                                </div>
+                                                    <div className="ml-4 flex items-center gap-2">
+                                                        <div className='flex flex-col'>
+                                                            <Link to={`/profile/patient/${getPatientUserId(appointment)}`}>
+                                                                <div className="text-sm font-medium text-gray-900">
+                                                                    {sentenceCase(getPatientName(appointment))}
+                                                                </div>
+                                                            </Link>
+                                                            <div className="text-sm text-gray-500">
+                                                                {getPatientTriage(appointment)}
+                                                            </div>
+                                                        </div>
+                                                        {appointment?.consultationMode === 'tele-consultation' &&
+                                                            appointment?.status !== 'Completed' &&
+                                                            (userRole === 'doctor' || userRole === 'hybrid') &&
+                                                            isAppointmentToday(appointment?.appointmentTime) && (
+                                                                <button
+                                                                    onClick={() => handleStartTeleconsultation(appointment)}
+                                                                    className="p-1 rounded-full bg-green-100 hover:bg-green-200 transition-all duration-300 group"
+                                                                    title="Start Tele-consultation"
+                                                                >
+                                                                    <Video className="w-4 h-4 text-green-600 group-hover:text-green-700 animate-pulse" />
+                                                                </button>
+                                                            )}
+                                                    </div>
 
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
-                                                {formatDate(appointment?.appointmentTime)}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
-                                                {formatTime(appointment?.appointmentTime)}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 py-1 text-sm w-40 text-center rounded-md inline-block ${appointment?.consultationMode === 'onsite'
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : 'bg-green-100 text-green-800'
-                                                }`}>
-                                                {appointment?.consultationMode === 'onsite' ? 'On-site' : 'Tele-consultation'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 py-1 text-sm rounded-md w-24 text-center inline-block ${appointment?.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                appointment?.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                                    appointment?.status === 'Follow Up' ? 'bg-blue-100 text-blue-800' :
-                                                        appointment?.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                                                            'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {appointment?.status || 'Unknown'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900 max-w-xs truncate">
-                                                {appointment?.diagnosis ? sentenceCase(appointment.diagnosis) : "N/A"}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <ActionList
-                                                item={appointment}
-                                                actions={[
-                                                    {
-                                                        label: 'Edit',
-                                                        icon: Edit,
-                                                        onClick: () => handleEditAppointment(appointment),
-                                                    },
-                                                    {
-                                                        label: 'Cancel Appointment',
-                                                        icon: Trash2,
-                                                        onClick: () => handleCancelAppointment(appointment?._id),
-                                                        className: 'text-red-600 hover:bg-red-50',
-                                                    },
-                                                    // Only show EMR and E-Prescription actions for doctors and hybrid users
-                                                    ...((userRole === 'doctor' || userRole === 'hybrid') ? [
-                                                        {
-                                                            label: 'Create EMR',
-                                                            icon: ClipboardPlus,
-                                                            onClick: () => handleRedirection(`/emr/${getPatientUserId(appointment)}`)
-                                                        },
-                                                        {
-                                                            label: 'Create E-Prescription',
-                                                            icon: FilePlus,
-                                                            onClick: () => handleRedirection(`/prescription/${getPatientUserId(appointment)}`)
-                                                        }
-                                                    ] : [])
-                                                ]}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">
+                                                    {formatDate(appointment?.appointmentTime)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">
+                                                    {formatTime(appointment?.appointmentTime)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-sm w-40 text-center rounded-md inline-block ${appointment?.consultationMode === 'onsite'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-green-100 text-green-800'
+                                                    }`}>
+                                                    {appointment?.consultationMode === 'onsite' ? 'On-site' : 'Tele-consultation'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-sm rounded-md w-24 text-center inline-block ${appointment?.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                    appointment?.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                                        appointment?.status === 'Follow Up' ? 'bg-blue-100 text-blue-800' :
+                                                            appointment?.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                                                                'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                    {appointment?.status || 'Unknown'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900 max-w-xs truncate">
+                                                    {appointment?.diagnosis ? sentenceCase(appointment.diagnosis) : "N/A"}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => handleRedirection(`/prescription-pad/${getPatientUserId(appointment)}?appointmentId=${appointment?._id}`)}
+                                                            className="flex items-center gap-1 px-3 py-1.5 border border-blue-600 bg-white text-blue-600 rounded-md hover:bg-blue-50 transition-all duration-200 text-sm font-medium"
+                                                            title="Write Prescription"
+                                                        >
+                                                            <span className="font-serif font-bold italic text-base leading-none">Rx</span>
+                                                            <span>Write</span>
+                                                        </button>
+                                                    <ActionList
+                                                        item={appointment}
+                                                        actions={[
+                                                            {
+                                                                label: 'Edit',
+                                                                icon: Edit,
+                                                                onClick: () => handleEditAppointment(appointment),
+                                                            },
+                                                            {
+                                                                label: 'Cancel Appointment',
+                                                                icon: Trash2,
+                                                                onClick: () => handleCancelAppointment(appointment?._id),
+                                                                className: 'text-red-600 hover:bg-red-50',
+                                                            },
+                                                            // Only show EMR and E-Prescription actions for doctors and hybrid users
+                                                            ...((userRole === 'doctor' || userRole === 'hybrid') ? [
+                                                                {
+                                                                    label: 'Create EMR',
+                                                                    icon: ClipboardPlus,
+                                                                    onClick: () => handleRedirection(`/emr/${getPatientUserId(appointment)}`)
+                                                                },
+                                                                {
+                                                                    label: 'Create E-Prescription',
+                                                                    icon: FilePlus,
+                                                                    onClick: () => handleRedirection(`/prescription-pad/${getPatientUserId(appointment)}?appointmentId=${appointment?._id}`)
+                                                                }
+                                                            ] : [])
+                                                        ]}
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </>
                             )}
                         </tbody>
@@ -725,7 +751,7 @@ const Appointments = () => {
                 appointment={teleconsultationModal.appointment}
                 sessionData={teleconsultationModal.sessionData}
             />
-        </>
+        </div>
     );
 };
 

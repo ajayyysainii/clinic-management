@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import {BACKEND_URL} from '../utils/urlConstants'
-import { useParams } from 'react-router';
+import { useParams, useSearchParams, useNavigate } from 'react-router';
 import {
     User,
     Stethoscope,
@@ -25,6 +25,9 @@ import axios from 'axios'; // Added axios import
 const EPrescriptionForm = () => {
 
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const appointmentId = searchParams.get('appointmentId');
     const userId = id;
     const { user } = useAuth();
     const doctorId = user?.data?._id;
@@ -164,6 +167,22 @@ const EPrescriptionForm = () => {
 
             if (response.ok) {
                 console.log('Prescription created successfully');
+
+                // If opened from an appointment, mark it as Completed
+                if (appointmentId) {
+                    try {
+                        const token = localStorage.getItem('authtoken');
+                        await axios.put(`${BACKEND_URL}/appointments/update/${appointmentId}`, {
+                            status: 'Completed',
+                        }, {
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+                        console.log('Appointment marked as Completed');
+                    } catch (appointmentErr) {
+                        console.error('Failed to update appointment status:', appointmentErr);
+                    }
+                }
+
                 setShowSuccessPopup(true);
                 // Reset form after successful submission
                 // You can add form reset logic here if needed
@@ -180,6 +199,10 @@ const EPrescriptionForm = () => {
 
     const closeSuccessPopup = () => {
         setShowSuccessPopup(false);
+        // If opened from an appointment, navigate back to appointments
+        if (appointmentId) {
+            navigate('/appointments');
+        }
     };
 
     return (

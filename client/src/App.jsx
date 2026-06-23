@@ -14,6 +14,7 @@ import AddAppointment from "./components/appointment/AddAppointment";
 import ClinicOnboarding from "./ClinicOnboarding";
 import EMRComponent from "./components/Emr";
 import EPrescriptionForm from "./components/EPrescription";
+import PrescriptionPad from "./components/prescription/PrescriptionPad";
 import Demo from "./components/Demo";
 import { InvoiceForm } from "./components/billing";
 import InvoiceList from "./components/billing/InvoiceList";
@@ -95,6 +96,7 @@ function App() {
           <Route path="profile/patient/:id" element={<Profile />} />
           <Route path="profile/doctor/:id" element={<DoctorProfile />} />
           <Route path="prescription/:id" element={<EPrescriptionForm />} />
+          <Route path="prescription-pad/:id" element={<PrescriptionPad />} />
           <Route path="emr/:id" element={<EMRComponent />} />
           <Route path="gst-clinics" element={<GstClinic />} />
           <Route path="clinics" element={<ClinicOnboarding />} />
