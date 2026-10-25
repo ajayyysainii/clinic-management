@@ -302,7 +302,12 @@ const DoctorList = () => {
                                 <tr key={doctor._id} className="hover:bg-gray-50 transition-colors duration-150">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <img className='rounded-full inline-flex w-[50px] h-[50px] object-fill items-center justify-center' src={doctor.user_id.profileImageUrl} alt={doctor.user_id.name} />
+                                            <DoctorAvatar
+                                                name={doctor.user_id?.name}
+                                                id={doctor.user_id?._id || doctor._id}
+                                                src={doctor.user_id?.profileImageUrl}
+                                                className="w-[50px] h-[50px]"
+                                            />
                                             <div className="ml-4">
                                             <Link to ={`/profile/doctor/${doctor?.user_id._id}`}>
                                                     <div className="text-sm font-medium text-gray-900">

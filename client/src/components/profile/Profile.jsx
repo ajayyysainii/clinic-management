@@ -28,7 +28,6 @@ import HealthSummary from './HealthSummary';
 import MedicalRecords from './MedicalRecords';
 import RiskAssesment from './RiskAssesment';
 import DoctorAvatar from '../ui/DoctorAvatar';
-import { sentenceCase } from '../../utils/sentenceCase';
 import HealthVitalsEditModal from './HealthVitalsEditModal';
 import AddAppointment from '../appointment/AddAppointment';
 
@@ -89,7 +88,7 @@ const Profile = () => {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [openSection, setOpenSection] = useState(SECTION.NONE);
-    const [appointments, setAppointments] = useState([]);
+    const [, setAppointments] = useState([]);
     const [isHealthVitalsModalOpen, setIsHealthVitalsModalOpen] = useState(false);
     const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
     const [showDetailsDropdown, setShowDetailsDropdown] = useState(false);
@@ -131,7 +130,7 @@ const Profile = () => {
             }
         };
         fetchAppointments();
-    }, [profileData]);
+    }, [profileData, id]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -292,9 +291,9 @@ const Profile = () => {
                                         {patient.userId?.gender || 'Male'}
                                     </p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 items-center">
+                                <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-2 items-center">
                                     <span className="text-sm text-gray-500">Email</span>
-                                    <p className="font-medium text-gray-900 text-left sm:text-nowrap break-all">
+                                    <p className="min-w-0 font-medium text-gray-900 text-left break-all">
                                         {patient.userId?.email || 'william@example.com'}
                                     </p>
                                 </div>

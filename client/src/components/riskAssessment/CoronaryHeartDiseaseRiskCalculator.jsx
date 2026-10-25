@@ -38,20 +38,20 @@ const CoronaryHeartDiseaseRiskCalculator = ({
       }
     })
       .then((res) => {
-        setFormData({
-          ...formData,
+        setFormData(currentFormData => ({
+          ...currentFormData,
           age: res.data.age,
           gender: res.data.gender,
           totalCholesterol: res.data.totalCholesterol,
           hdlCholesterol: res.data.hdlCholesterol,
           systolicBP: res.data.systolicBP,
-        });
+        }));
         setIsLoading(false);
       })
       .catch(() => {
         setIsLoading(false);
       });
-  }, []);
+  }, [userId]);
 
   const handleCoronaryDieasesCalculate = () => {
     setIsLoading(true);

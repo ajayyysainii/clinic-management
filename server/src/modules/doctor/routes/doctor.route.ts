@@ -63,6 +63,7 @@ router.put(
       { name: 'eSign', maxCount: 1 },
       { name: 'certificates', maxCount: 10 },
       { name: 'degrees', maxCount: 10 },
+      { name: 'profileImageUrl', maxCount: 1 },
     ],
     folder: 'doctor-files',
   }),

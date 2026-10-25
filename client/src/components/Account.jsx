@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import PasswordChangeModal from './PasswordChangeModal';
@@ -57,14 +57,7 @@ const Account = () => {
         }
     }, [clinicData]);
 
-    // Check for existing professional data when user data is available
-    useEffect(() => {
-        if (userData?.roles?.includes('hybrid') && userData._id) {
-            checkExistingDoctorData();
-        }
-    }, [userData]);
-
-    const checkExistingDoctorData = async () => {
+    const checkExistingDoctorData = useCallback(async () => {
         try {
             setIsCheckingDoctorData(true);
             const token = localStorage.getItem('authtoken');
@@ -90,7 +83,14 @@ const Account = () => {
         } finally {
             setIsCheckingDoctorData(false);
         }
-    };
+    }, [userData?._id]);
+
+    // Check for existing professional data when user data is available
+    useEffect(() => {
+        if (userData?.roles?.includes('hybrid') && userData._id) {
+            checkExistingDoctorData();
+        }
+    }, [userData, checkExistingDoctorData]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -1115,4 +1115,4 @@ const Account = () => {
     );
 };
 
-export default Account; 
+export default Account;

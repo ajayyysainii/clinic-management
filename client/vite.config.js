@@ -10,6 +10,9 @@ export default defineConfig({
   ],
   // Must match where the app is hosted. "/" for Vercel root; use "/clinic/" only if the whole app is served under that path (and assets exist there).
   base: '/',
+  build: {
+    chunkSizeWarningLimit: 2500,
+  },
   server: {
     host: true,
     allowedHosts: ['preva.care'],

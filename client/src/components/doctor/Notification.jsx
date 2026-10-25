@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Bell, Check, X, Calendar, Video, User, Clock } from 'lucide-react';
 import axios from 'axios'
 import {BACKEND_URL} from '../../utils/urlConstants'
@@ -27,14 +27,14 @@ const Notification = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const { user } = useAuth();
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
+        const hasValidClinicId = Boolean(user?.data?.clinic);
+
         try {
             setLoading(true);
             const token = localStorage.getItem('authtoken');
             
             // Check if user has a valid clinic ID before using clinic endpoint
-            const hasValidClinicId = user?.data?.clinic && user.data.clinic !== '';
-            
             // Debug user data structure
             console.log('User object:', user);
             console.log('User data:', user?.data?.roles[0]);
@@ -96,7 +96,7 @@ const Notification = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
 
     const markAsRead = async (notificationId) => {
         try {
@@ -285,7 +285,7 @@ const Notification = () => {
         if (user && user.data) {
             fetchNotifications();
         }
-    }, [user]);
+    }, [user, fetchNotifications]);
 
     const toggleDropdown = () => {
         setIsOpen(!isOpen);

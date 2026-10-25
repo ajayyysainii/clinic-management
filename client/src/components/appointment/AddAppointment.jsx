@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../../utils/urlConstants';
 import { useAuth } from '../../hooks/useAuth';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FormLoader } from '../ui/FormLoader';
+import DoctorAvatar from '../ui/DoctorAvatar';
 
 const AddAppointment = ({ patient: propPatient, onClose: propOnClose, onSuccess: propOnSuccess }) => {
   const { user } = useAuth();
@@ -26,14 +27,7 @@ const AddAppointment = ({ patient: propPatient, onClose: propOnClose, onSuccess:
   const [success, setSuccess] = useState('');
   const [patientData, setPatientData] = useState(null);
 
-  // Fetch patient data if we have a patientId from URL
-  useEffect(() => {
-    if (patientId && !propPatient) {
-      fetchPatientData();
-    }
-  }, [patientId, propPatient]);
-
-  const fetchPatientData = async () => {
+  const fetchPatientData = useCallback(async () => {
     try {
       const token = localStorage.getItem('authtoken');
       const response = await axios.get(`${BACKEND_URL}/users/${patientId}`, {
@@ -44,46 +38,9 @@ const AddAppointment = ({ patient: propPatient, onClose: propOnClose, onSuccess:
       setError('Failed to load patient data');
       console.error('Error fetching patient:', err);
     }
-  };
+  }, [patientId]);
 
-  useEffect(() => {
-    // Only proceed if user data is available
-    if (!user) return;
-    
-    // If user is hybrid role, automatically set the current user as the doctor
-    if (user?.data?.roles[0] === 'hybrid') {
-      const currentUserAsDoctor = {
-        _id: user._id,
-        user_id: {
-          _id: user._id,
-          name: user.name,
-          profileImageUrl: user.profileImageUrl
-        },
-        name: user.name,
-        specialization: user.specialization || [],
-        profileImageUrl: user.profileImageUrl
-      };
-      
-      setSelectedDoctors([currentUserAsDoctor]);
-      setDoctorAssignments([{
-        doctorId: user._id,
-        profileImage: user.profileImageUrl || '',
-        doctorName: user.name,
-        specialization: user.specialization || [],
-        appointmentTime: '',
-        consultationMode: 'onsite',
-        status: 'Pending',
-        diagnosis: '',
-      }]);
-      console.log("dcotor selected : "+selectedDoctors)
-      console.log("dcotor assignments : "+doctorAssignments)
-      setDoctorsLoading(false);
-    } else {
-      fetchDoctors();
-    }
-  }, [user]);
-
-  const fetchDoctors = async () => {
+  const fetchDoctors = useCallback(async () => {
     setDoctorsLoading(true);
     try {
       const token = localStorage.getItem('authtoken');
@@ -96,7 +53,47 @@ const AddAppointment = ({ patient: propPatient, onClose: propOnClose, onSuccess:
     } finally {
       setDoctorsLoading(false);
     }
-  };
+  }, []);
+
+  // Fetch patient data if we have a patientId from URL
+  useEffect(() => {
+    if (patientId && !propPatient) {
+      fetchPatientData();
+    }
+  }, [patientId, propPatient, fetchPatientData]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    if (user?.data?.roles[0] === 'hybrid') {
+      const currentUserAsDoctor = {
+        _id: user._id,
+        user_id: {
+          _id: user._id,
+          name: user.name,
+          profileImageUrl: user.profileImageUrl
+        },
+        name: user.name,
+        specialization: user.specialization || [],
+        profileImageUrl: user.profileImageUrl
+      };
+
+      setSelectedDoctors([currentUserAsDoctor]);
+      setDoctorAssignments([{
+        doctorId: user._id,
+        profileImage: user.profileImageUrl || '',
+        doctorName: user.name,
+        specialization: user.specialization || [],
+        appointmentTime: '',
+        consultationMode: 'onsite',
+        status: 'Pending',
+        diagnosis: '',
+      }]);
+      setDoctorsLoading(false);
+    } else {
+      fetchDoctors();
+    }
+  }, [user, fetchDoctors]);
 
   // Doctor selection logic (multi-select)
   const handleDoctorSelect = (doctor) => {
@@ -275,10 +272,11 @@ const AddAppointment = ({ patient: propPatient, onClose: propOnClose, onSuccess:
                           className={`p-3 cursor-pointer border-b border-gray-50 last:border-b-0 hover:bg-gray-100 flex items-center ${isSelected ? 'bg-blue-50' : ''}`}
                           onClick={() => handleDoctorSelect(doctor)}
                         >
-                          <img
-                            src={doctor.user_id?.profileImageUrl || doctor.profileImageUrl || '/default-doctor.png'}
-                            alt="Doctor"
-                            className="w-8 h-8 rounded-full object-cover mr-3 border border-gray-200"
+                          <DoctorAvatar
+                            name={doctor.user_id?.name || doctor.name}
+                            id={doctorId}
+                            src={doctor.user_id?.profileImageUrl || doctor.profileImageUrl}
+                            className="w-8 h-8 mr-3 border border-gray-200"
                           />
                           <div>
                             <div className="font-medium text-gray-900">{doctor.user_id?.name || doctor.name}</div>

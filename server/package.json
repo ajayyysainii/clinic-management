@@ -6,7 +6,8 @@
     "format": "prettier --config .prettierrc src/**/*.ts --write",
     "dev": "nodemon --config nodemon.json",
     "start": "node dist/server.js",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "seed:demo": "ts-node src/scripts/seed-demo.ts"
   },
   "keywords": [],
   "author": "",

@@ -100,3 +100,19 @@ npm run dev
 - Add deployment guide (frontend + backend)
 - Add API request/response examples
 - Add test execution instructions
+
+## Demo data
+
+The backend includes a repeatable demo seed with synthetic Indian clinic data. It adds one clinic, an admin login, doctors, staff, patients, appointments, services, inventory, invoices, prescriptions, EMRs, forms, and notifications without deleting existing records.
+
+```bash
+cd server
+npm run seed:demo
+```
+
+Demo login:
+
+- Email: `admin@demo.prevacare.in`
+- Password: `Demo@123`
+
+All seeded records are fictional and intended only for local/demo use.

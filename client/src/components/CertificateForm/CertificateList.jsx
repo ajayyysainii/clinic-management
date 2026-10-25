@@ -29,11 +29,9 @@ const CertificateList = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
-  const [patients, setPatients] = useState([]);
 
   useEffect(() => {
     fetchCertificates();
-    fetchPatients();
   }, []);
 
   const fetchCertificates = async () => {
@@ -49,18 +47,6 @@ const CertificateList = () => {
       setError('Failed to fetch certificates');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchPatients = async () => {
-    try {
-      const token = localStorage.getItem('authtoken');
-      const response = await axios.get(`${BACKEND_URL}/patients`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPatients(response.data.data || []);
-    } catch (error) {
-      console.error('Error fetching patients:', error);
     }
   };
 
@@ -379,4 +365,4 @@ const CertificateList = () => {
   );
 };
 
-export default CertificateList; 
+export default CertificateList;

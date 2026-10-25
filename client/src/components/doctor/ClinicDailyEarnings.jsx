@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { BACKEND_URL } from '../../utils/urlConstants';
@@ -11,11 +11,7 @@ const ClinicDailyEarnings = () => {
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
-  useEffect(() => {
-    fetchClinicEarnings();
-  }, [clinicId, selectedDate]);
-
-  const fetchClinicEarnings = async () => {
+  const fetchClinicEarnings = useCallback(async () => {
     if (!clinicId) return;
     
     setLoading(true);
@@ -35,7 +31,11 @@ const ClinicDailyEarnings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clinicId, selectedDate]);
+
+  useEffect(() => {
+    fetchClinicEarnings();
+  }, [fetchClinicEarnings]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -228,4 +228,4 @@ const ClinicDailyEarnings = () => {
   );
 };
 
-export default ClinicDailyEarnings; 
+export default ClinicDailyEarnings;

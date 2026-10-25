@@ -206,7 +206,7 @@ const StaffList = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
-                            {filteredStaff.map((staff, index) => (
+                            {filteredStaff.map((staff) => (
                                 <tr
                                     key={staff._id}
                                     className="hover:bg-blue-50 transition-colors duration-200 group"

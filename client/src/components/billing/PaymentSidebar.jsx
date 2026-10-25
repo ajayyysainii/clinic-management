@@ -24,7 +24,7 @@ const PaymentSidebar = ({ invoiceId, onPaymentAdded }) => {
     try {
       const newPayment = {
         ...payment,
-        invoice_id: "",
+        invoice_id: invoiceId,
         amount: parseFloat(payment.amount),
         paid_on: new Date(payment.paid_on)
       };

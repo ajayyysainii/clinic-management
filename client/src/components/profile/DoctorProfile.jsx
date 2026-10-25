@@ -199,8 +199,8 @@ const DoctorProfile = () => {
             setImageUploading(true);
             const imageUrl = await uploadImageToS3(selectedImage);
 
-            // Update the user's profile image via User endpoint
-            const userUpdateResponse = await axios.put(`${BACKEND_URL}/users/profile`, {
+            // Update the doctor being viewed, not the currently signed-in user.
+            const userUpdateResponse = await axios.put(`${BACKEND_URL}/doctors/update/${doctorId}`, {
               profileImageUrl: imageUrl
             }, {
               headers: { Authorization: `Bearer ${token}` },
@@ -222,9 +222,9 @@ const DoctorProfile = () => {
           }
           break;
 
-        case 'email':
+        case 'email': {
           // Update user data directly
-          const emailResponse = await axios.put(`${BACKEND_URL}/users/profile`, {
+          const emailResponse = await axios.put(`${BACKEND_URL}/doctors/update/${doctorId}`, {
             email: editFormData.email
           }, {
             headers: { Authorization: `Bearer ${token}` },
@@ -242,10 +242,11 @@ const DoctorProfile = () => {
             handleCancelEdit();
           }
           return;
+        }
 
-        case 'phone':
+        case 'phone': {
           // Update user data directly
-          const phoneResponse = await axios.put(`${BACKEND_URL}/users/profile`, {
+          const phoneResponse = await axios.put(`${BACKEND_URL}/doctors/update/${doctorId}`, {
             phone: editFormData.phone
           }, {
             headers: { Authorization: `Bearer ${token}` },
@@ -263,6 +264,7 @@ const DoctorProfile = () => {
             handleCancelEdit();
           }
           return;
+        }
 
         case 'experience':
           updateData = {
@@ -287,7 +289,7 @@ const DoctorProfile = () => {
           };
           break;
 
-        case 'degrees':
+        case 'degrees': {
           // For degrees, we need to use FormData with file upload
           setImageUploading(true);
           formData = new FormData();
@@ -301,7 +303,7 @@ const DoctorProfile = () => {
           formData.append('existingDegrees', JSON.stringify(existingDegreeImages));
 
           // Add degree files if any
-          editFormData.degrees?.forEach((deg, index) => {
+          editFormData.degrees?.forEach((deg) => {
             if (deg.newFile) {
               formData.append('degrees', deg.newFile);
             }
@@ -311,8 +313,9 @@ const DoctorProfile = () => {
           formData.append('specializations', JSON.stringify(doctor?.specializations || []));
           formData.append('availability', JSON.stringify(doctor?.availability || []));
           break;
+        }
 
-        case 'certificates':
+        case 'certificates': {
           // For certificates, we need to use FormData with file upload
           setImageUploading(true);
           formData = new FormData();
@@ -326,7 +329,7 @@ const DoctorProfile = () => {
           formData.append('existingCertificates', JSON.stringify(existingCertificateImages));
 
           // Add certificate files if any
-          editFormData.certificates?.forEach((cert, index) => {
+          editFormData.certificates?.forEach((cert) => {
             if (cert.newFile) {
               formData.append('certificates', cert.newFile);
             }
@@ -336,8 +339,9 @@ const DoctorProfile = () => {
           formData.append('specializations', JSON.stringify(doctor?.specializations || []));
           formData.append('availability', JSON.stringify(doctor?.availability || []));
           break;
+        }
 
-        case 'eSign':
+        case 'eSign': {
           if (selectedImage) {
             setImageUploading(true);
             // For eSign, we need to use FormData with file upload
@@ -349,6 +353,7 @@ const DoctorProfile = () => {
             formData.append('availability', JSON.stringify(doctor?.availability || []));
           }
           break;
+        }
 
         default:
           break;
@@ -420,10 +425,12 @@ const DoctorProfile = () => {
             {/* Enhanced Profile Image - Responsive sizing */}
             <div className="relative">
               <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-3xl bg-white p-2 shadow-2xl">
-                <img
-                  className="w-full h-full rounded-2xl object-cover"
-                  src={user.profileImageUrl || 'https://s3.amazonaws.com/37assets/svn/765-default-avatar.png'}
-                  alt="Profile"
+                <DoctorAvatar
+                  name={user.name}
+                  id={user._id || doctor._id}
+                  src={user.profileImageUrl}
+                  className="w-full h-full"
+                  roundedClass="rounded-2xl"
                 />
                 {/* Edit button for profile image */}
                 <button
@@ -1160,10 +1167,11 @@ const DoctorProfile = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <img
-                            src={user.profileImageUrl || 'https://s3.amazonaws.com/37assets/svn/765-default-avatar.png'}
-                            alt="Current"
-                            className="w-full h-full object-cover"
+                          <DoctorAvatar
+                            name={user.name}
+                            id={user._id || doctor._id}
+                            src={user.profileImageUrl}
+                            className="w-full h-full"
                           />
                         )}
                       </div>

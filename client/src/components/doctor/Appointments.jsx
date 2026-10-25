@@ -299,26 +299,6 @@ const Appointments = () => {
         return 'N/A';
     };
 
-    const getDoctorName = (appointment) => {
-        if (appointment?.doctorId?.name) {
-            return appointment.doctorId.name;
-        }
-        if (appointment?.doctor?.name) {
-            return appointment.doctor.name;
-        }
-        return 'N/A';
-    };
-
-    const getClinicName = (appointment) => {
-        if (appointment?.clinicId?.name) {
-            return appointment.clinicId.name;
-        }
-        if (appointment?.clinic?.name) {
-            return appointment.clinic.name;
-        }
-        return 'N/A';
-    };
-
     // Filter appointments based on search term and mode filter
     const filteredData = data.filter(appointment => {
         // Search filter

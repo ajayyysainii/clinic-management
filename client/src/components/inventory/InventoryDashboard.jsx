@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { AlertTriangle, Calendar, TrendingUp, Package, Plus, Eye, RefreshCw } from 'lucide-react';
 import { BACKEND_URL } from '../../utils/urlConstants';
-import { withBasePath } from '../../utils/basePath.js';
 import { sentenceCase } from '../../utils/sentenceCase.js';
 
 const InventoryDashboard = () => {
@@ -97,7 +96,7 @@ const InventoryDashboard = () => {
         if (!dateString) return 'N/A';
         try {
             return new Date(dateString).toLocaleDateString();
-        } catch (err) {
+        } catch {
             return 'Invalid Date';
         }
     };
@@ -110,7 +109,7 @@ const InventoryDashboard = () => {
             const diffTime = expiry - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays;
-        } catch (err) {
+        } catch {
             return null;
         }
     };
@@ -370,4 +369,4 @@ const InventoryDashboard = () => {
     );
 };
 
-export default InventoryDashboard; 
+export default InventoryDashboard;

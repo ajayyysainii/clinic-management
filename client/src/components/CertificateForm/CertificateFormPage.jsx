@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../../utils/urlConstants';
-import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -20,7 +19,6 @@ import {
 import { FullPageLoader } from '../ui/FormLoader';
 
 const CertificateFormPage = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [certificateType, setCertificateType] = useState('sickness');
   const [formData, setFormData] = useState({
@@ -110,7 +108,7 @@ const CertificateFormPage = () => {
         remarks: formData.remarks || undefined
       };
 
-      const response = await axios.post(
+      await axios.post(
         `${BACKEND_URL}/forms/certificate/create`,
         dataToSend,
         {
@@ -470,4 +468,4 @@ const CertificateFormPage = () => {
   );
 };
 
-export default CertificateFormPage; 
+export default CertificateFormPage;

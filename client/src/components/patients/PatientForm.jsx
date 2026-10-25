@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 
 const PatientForm = ({ patient, isEditMode, onClose, onSuccess }) => {
     const { user } = useAuth();
+    const userRole = user?.data?.roles?.[0];
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: patient?.name || '',
@@ -76,11 +77,14 @@ const PatientForm = ({ patient, isEditMode, onClose, onSuccess }) => {
             }
         }
         fetchDoctors(1, true);
+    // fetchDoctors reads the current authenticated user and is intentionally run
+    // only when the patient/edit context changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditMode, patient, user]);
 
     // Auto-assign hybrid doctor when doctors are loaded
     useEffect(() => {
-        if (user?.data?.roles[0] === 'hybrid' && doctors.length === 1 && !isEditMode) {
+        if (userRole === 'hybrid' && doctors.length === 1 && !isEditMode) {
             const hybridDoctor = doctors[0];
             setSelectedDoctors([hybridDoctor]);
             setDoctorAssignments([{
@@ -94,7 +98,7 @@ const PatientForm = ({ patient, isEditMode, onClose, onSuccess }) => {
                 diagnosis: formData.diagnosis || ''
             }]);
         }
-    }, [doctors, user?.data?.roles[0], isEditMode, formData.consultationMode, formData.diagnosis]);
+    }, [doctors, userRole, isEditMode, formData.consultationMode, formData.diagnosis]);
 
     const fetchDoctors = async (page = 1, reset = false) => {
         try {

@@ -28,7 +28,7 @@ const TeleConsultationModal = ({ isOpen, onClose, appointment, sessionData }) =>
   const [showInvitation, setShowInvitation] = useState(true);
   const [invitationLink, setInvitationLink] = useState('');
   const [participants, setParticipants] = useState([]);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const isScreenSharing = false;
   const [remoteUsers, setRemoteUsers] = useState(new Map());
 
   const localAudioTrackRef = useRef(null);

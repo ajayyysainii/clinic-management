@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, ChevronDown, X } from 'lucide-react';
 import axios from 'axios';
 import { BACKEND_URL } from '../../utils/urlConstants';
@@ -31,7 +31,7 @@ const Autocomplete = ({
   const timeoutRef = useRef(null);
 
   // Debounced search function
-  const searchItems = async (searchQuery) => {
+  const searchItems = useCallback(async (searchQuery) => {
     if (!searchQuery || searchQuery.length < minQueryLength) {
       setSuggestions([]);
       return;
@@ -65,7 +65,7 @@ const Autocomplete = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [maxResults, minQueryLength, searchEndpoint, searchParams]);
 
   // Debounced search effect
   useEffect(() => {
@@ -86,7 +86,7 @@ const Autocomplete = ({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [query, searchEndpoint, searchParams, minQueryLength, debounceMs, maxResults]);
+  }, [query, minQueryLength, debounceMs, searchItems]);
 
   // Handle input change
   const handleInputChange = (e) => {
@@ -240,4 +240,4 @@ const Autocomplete = ({
   );
 };
 
-export default Autocomplete; 
+export default Autocomplete;

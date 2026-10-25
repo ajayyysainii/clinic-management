@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Save, X, IndianRupee, Clock, Tag, FileText } from 'lucide-react';
 import axios from 'axios';
 import { BACKEND_URL } from '../../utils/urlConstants';
@@ -32,13 +32,7 @@ const ServiceForm = ({ serviceId = null, onSave, onCancel }) => {
     { value: 'other', label: 'Other' },
   ];
 
-  useEffect(() => {
-    if (editServiceId) {
-      fetchService();
-    }
-  }, [editServiceId]);
-
-  const fetchService = async () => {
+  const fetchService = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('authtoken');
@@ -55,12 +49,18 @@ const ServiceForm = ({ serviceId = null, onSave, onCancel }) => {
         duration: service.duration?.toString() || '30',
         isActive: service.isActive !== undefined ? service.isActive : true,
       });
-    } catch (err) {
+    } catch {
       setError('Failed to fetch service details');
     } finally {
       setLoading(false);
     }
-  };
+  }, [editServiceId]);
+
+  useEffect(() => {
+    if (editServiceId) {
+      fetchService();
+    }
+  }, [editServiceId, fetchService]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -282,4 +282,4 @@ const ServiceForm = ({ serviceId = null, onSave, onCancel }) => {
   );
 };
 
-export default ServiceForm; 
+export default ServiceForm;

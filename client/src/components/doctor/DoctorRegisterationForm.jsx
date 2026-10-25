@@ -197,6 +197,9 @@ const DoctorRegisterationForm = ({ doctor, isEditMode, isHybridMode = false, onC
             });
             setProfilePreview(null);
         }
+    // This effect deliberately resets the form only when the edited doctor changes.
+    // Controlled callbacks are excluded to avoid resetting on every parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [doctor, isEditMode]);
 
     // Handler for form data changes

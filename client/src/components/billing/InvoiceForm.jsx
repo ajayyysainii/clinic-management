@@ -126,11 +126,13 @@ const InvoiceForm = () => {
 
   // Auto-update first payment amount to match total amount
   useEffect(() => {
-    if (totalAmount > 0 && payments.length > 0) {
-      // Only update if the first payment amount is 0 or if it's the initial load
-      const firstPayment = payments[0];
-      if (firstPayment && (firstPayment.amount === 0 || firstPayment.amount === '')) {
-        setPayments(payments.map((payment, index) => {
+    if (totalAmount > 0) {
+      setPayments(currentPayments => {
+        const firstPayment = currentPayments[0];
+        if (!firstPayment || (firstPayment.amount !== 0 && firstPayment.amount !== '')) {
+          return currentPayments;
+        }
+        return currentPayments.map((payment, index) => {
           if (index === 0) {
             return {
               ...payment,
@@ -138,10 +140,10 @@ const InvoiceForm = () => {
             };
           }
           return payment;
-        }));
-      }
+        });
+      });
     }
-  }, [totalAmount]); // Only depend on totalAmount to avoid infinite loops
+  }, [totalAmount]);
 
   // Fetch appointments for the clinic on mount
   useEffect(() => {

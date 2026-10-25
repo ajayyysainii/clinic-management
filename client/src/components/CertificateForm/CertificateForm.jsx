@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '../../utils/urlConstants';
-import { useAuth } from '../../hooks/useAuth';
 import {
   User,
   Calendar,
@@ -18,7 +17,6 @@ import {
 import { FormLoader, FullPageLoader } from '../ui/FormLoader';
 
 const CertificateForm = ({ patientId, onClose, onSuccess }) => {
-  const { user } = useAuth();
   const [certificateType, setCertificateType] = useState('sickness');
   const [formData, setFormData] = useState({
     patientId: patientId || '',
@@ -464,4 +462,4 @@ const CertificateForm = ({ patientId, onClose, onSuccess }) => {
   );
 };
 
-export default CertificateForm; 
+export default CertificateForm;

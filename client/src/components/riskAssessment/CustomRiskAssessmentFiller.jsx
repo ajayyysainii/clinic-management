@@ -83,8 +83,7 @@ const CustomRiskAssessmentFiller = ({ form, patientId, onClose, onSubmitted }) =
         evaluatedFormula = evaluatedFormula.replace(regex, context[fieldName]);
       });
 
-      // Evaluate the formula (basic implementation)
-      return eval(evaluatedFormula);
+      return evaluateArithmeticExpression(evaluatedFormula);
     } catch (error) {
       console.error('Error calculating score:', error);
       return null;
@@ -506,4 +505,82 @@ const CustomRiskAssessmentFiller = ({ form, patientId, onClose, onSubmitted }) =
   );
 };
 
-export default CustomRiskAssessmentFiller; 
+export default CustomRiskAssessmentFiller;
+const evaluateArithmeticExpression = (expression) => {
+  if (!/^[\d+\-*/%().\seE]+$/.test(expression)) {
+    throw new Error('Formula contains unsupported characters');
+  }
+
+  const tokens = expression.match(/\d*\.?\d+(?:e[+-]?\d+)?|[()+\-*/%]/gi) || [];
+  const output = [];
+  const operators = [];
+  const precedence = { '+': 1, '-': 1, '*': 2, '/': 2, '%': 2, 'u-': 3 };
+  const rightAssociative = new Set(['u-']);
+  let previousType = 'start';
+
+  tokens.forEach((token) => {
+    if (!Number.isNaN(Number(token))) {
+      output.push(Number(token));
+      previousType = 'number';
+      return;
+    }
+
+    if (token === '(') {
+      operators.push(token);
+      previousType = 'open';
+      return;
+    }
+
+    if (token === ')') {
+      while (operators.length && operators.at(-1) !== '(') output.push(operators.pop());
+      if (operators.pop() !== '(') throw new Error('Formula has mismatched parentheses');
+      previousType = 'number';
+      return;
+    }
+
+    const operator = token === '-' && ['start', 'operator', 'open'].includes(previousType) ? 'u-' : token;
+    while (
+      operators.length &&
+      operators.at(-1) !== '(' &&
+      (precedence[operators.at(-1)] > precedence[operator] ||
+        (precedence[operators.at(-1)] === precedence[operator] && !rightAssociative.has(operator)))
+    ) {
+      output.push(operators.pop());
+    }
+    operators.push(operator);
+    previousType = 'operator';
+  });
+
+  while (operators.length) {
+    const operator = operators.pop();
+    if (operator === '(') throw new Error('Formula has mismatched parentheses');
+    output.push(operator);
+  }
+
+  const values = [];
+  output.forEach((token) => {
+    if (typeof token === 'number') {
+      values.push(token);
+      return;
+    }
+    if (token === 'u-') {
+      if (!values.length) throw new Error('Invalid formula');
+      values.push(-values.pop());
+      return;
+    }
+    const right = values.pop();
+    const left = values.pop();
+    if (left === undefined || right === undefined) throw new Error('Invalid formula');
+    const operations = {
+      '+': () => left + right,
+      '-': () => left - right,
+      '*': () => left * right,
+      '/': () => left / right,
+      '%': () => left % right,
+    };
+    values.push(operations[token]());
+  });
+
+  if (values.length !== 1 || !Number.isFinite(values[0])) throw new Error('Formula did not produce a finite number');
+  return values[0];
+};

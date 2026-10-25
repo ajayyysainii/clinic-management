@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { BACKEND_URL } from '../../utils/urlConstants';
@@ -14,11 +14,7 @@ const DoctorDailyEarnings = () => {
     endDate: new Date().toISOString().split('T')[0], // Today
   });
 
-  useEffect(() => {
-    fetchEarnings();
-  }, [doctorId, clinicId, dateRange]);
-
-  const fetchEarnings = async () => {
+  const fetchEarnings = useCallback(async () => {
     if (!doctorId || !clinicId) return;
     
     setLoading(true);
@@ -41,21 +37,17 @@ const DoctorDailyEarnings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [doctorId, clinicId, dateRange]);
+
+  useEffect(() => {
+    fetchEarnings();
+  }, [fetchEarnings]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
     }).format(amount || 0);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
   };
 
   const formatDateTime = (dateString) => {
@@ -80,15 +72,6 @@ const DoctorDailyEarnings = () => {
   };
 
 
-
-  const calculateExpectedEarnings = () => {
-    if (!earnings || earnings.length === 0) {
-      return 0;
-    }
-
-    // Calculate total commission from all earnings records
-    return earnings.reduce((total, earning) => total + (earning.commission_amount || 0), 0);
-  };
 
   const calculateTotalRevenue = () => {
     if (!earnings || earnings.length === 0) {
@@ -287,4 +270,4 @@ const DoctorDailyEarnings = () => {
   );
 };
 
-export default DoctorDailyEarnings; 
+export default DoctorDailyEarnings;

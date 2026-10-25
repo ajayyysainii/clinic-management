@@ -352,6 +352,8 @@ export const updateDoctor = async (req: Request, res: Response): Promise<void> =
       existingESign,
       existingDegrees,
       existingCertificates,
+      existingProfileImage,
+      profileImageUrl,
     } = req.body
 
     // Helper function to safely parse JSON or return as-is if already parsed
@@ -385,6 +387,7 @@ export const updateDoctor = async (req: Request, res: Response): Promise<void> =
       eSign?: S3File[]
       degrees?: S3File[]
       certificates?: S3File[]
+      profileImageUrl?: S3File[]
     }
 
     // Find the doctor first
@@ -398,9 +401,14 @@ export const updateDoctor = async (req: Request, res: Response): Promise<void> =
     }
 
     // Prepare the update data - only include defined values
-    const updateData: any = {
-      specializations: parsedSpecializations,
-      availability: parsedAvailability,
+    const updateData: any = {}
+
+    if (specializations !== undefined) {
+      updateData.specializations = parsedSpecializations
+    }
+
+    if (availability !== undefined) {
+      updateData.availability = parsedAvailability
     }
 
     // Only add fields if they are defined and not empty
@@ -426,6 +434,14 @@ export const updateDoctor = async (req: Request, res: Response): Promise<void> =
 
       if (phone !== undefined && phone !== null && phone.trim() !== '') {
         userUpdateData.phone = phone.trim()
+      }
+
+      if (files?.profileImageUrl?.[0]?.location) {
+        userUpdateData.profileImageUrl = files.profileImageUrl[0].location
+      } else if (typeof profileImageUrl === 'string' && profileImageUrl.trim() !== '') {
+        userUpdateData.profileImageUrl = profileImageUrl.trim()
+      } else if (typeof existingProfileImage === 'string' && existingProfileImage.trim() !== '') {
+        userUpdateData.profileImageUrl = existingProfileImage.trim()
       }
 
       // Only update user if there's data to update

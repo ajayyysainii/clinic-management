@@ -121,7 +121,7 @@ const GstClinic = () => {
                 </td>
               </tr>
             ) : (
-              filteredInvoices.map((inv, idx) => (
+              filteredInvoices.map((inv) => (
                 <tr key={inv._id} className="hover:bg-gray-50 transition-colors duration-150 border-t border-gray-200">
                   <td className="px-6 py-4 whitespace-nowrap">{inv.invoiceNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString() : '-'}</td>
@@ -142,4 +142,4 @@ const GstClinic = () => {
   );
 };
 
-export default GstClinic; 
+export default GstClinic;

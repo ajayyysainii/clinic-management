@@ -149,22 +149,8 @@ const Sidebar = ({ userRole, isExpanded, setIsExpanded, isMobile }) => {
                     </button>
                 )}
 
-                {/* Logo Section */}
-                <div className="flex-shrink-0 flex items-center justify-center h-16 px-4 border-b border-gray-100">
-                    <img
-                        src={isExpanded 
-                            ? "https://preva.care/admin/assets/preva_logo_blue_combined-DSVjkKOP.png" 
-                            : "https://preva.care/admin/assets/ic_preva_symbol_blue-C5k4JvOI.png"
-                        }
-                        alt="Preva Logo"
-                        className={`transition-all duration-300 ${
-                            isExpanded ? 'h-8 w-auto' : 'h-8 w-8'
-                        }`}
-                    />
-                </div>
-
                 {/* Navigation Menu */}
-                <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <nav className="flex-1 overflow-y-auto pt-14 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                     <div className="space-y-1 px-3">
                         {filteredMenuItems.map((item) => {
                             const IconComponent = item.icon;
