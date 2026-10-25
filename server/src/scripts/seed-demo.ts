@@ -52,12 +52,30 @@ async function seed(): Promise<void> {
   console.log('Connected to MongoDB')
 
   const password = await hashPassword(DEMO_PASSWORD)
+  const targetAccountEmail = process.env.SEED_TARGET_EMAIL?.trim().toLowerCase()
+  const targetAccount = targetAccountEmail
+    ? await User.findOne({ email: targetAccountEmail, deletedAt: null })
+    : null
 
-  const clinic = await upsert(Clinic, { email: 'hello@demo.prevacare.in' }, {
-    name: 'Aarogya Family Clinic (Demo)',
-    email: 'hello@demo.prevacare.in',
+  if (targetAccountEmail && !targetAccount) {
+    throw new Error(`No active account found for ${targetAccountEmail}`)
+  }
+
+  const seedNamespace = targetAccount?._id.toString().slice(-6)
+  const accountScopedEmail = (email: string): string => seedNamespace
+    ? email.replace('@demo.prevacare.in', `.${seedNamespace}@demo.prevacare.in`)
+    : email
+  const recordNamespace = seedNamespace ? `${seedNamespace.toUpperCase()}-` : ''
+  const clinicEmail = seedNamespace
+    ? `clinic.${seedNamespace}@demo.prevacare.in`
+    : 'hello@demo.prevacare.in'
+
+  let clinic = targetAccount?.clinic ? await Clinic.findById(targetAccount.clinic) : null
+  if (!clinic) clinic = await upsert(Clinic, { email: clinicEmail }, {
+    name: targetAccount ? 'Sanjeevani Health Centre (Demo)' : 'Aarogya Family Clinic (Demo)',
+    email: clinicEmail,
     phone: '+91 90000 00001',
-    ownerName: 'Dr. Ananya Sharma',
+    ownerName: targetAccount?.name || 'Dr. Ananya Sharma',
     website: 'https://demo.prevacare.in',
     status: 'active',
     type: 'organization',
@@ -66,7 +84,7 @@ async function seed(): Promise<void> {
     panNumber: 'ABCDE1234F',
     gstNumber: '27ABCDE1234F1Z5',
     availableLocations: [{
-      place: 'Aarogya Family Clinic',
+      place: targetAccount ? 'Sanjeevani Health Centre' : 'Aarogya Family Clinic',
       street: '18, Baner Road, near Orchid School',
       city: 'Pune',
       state: 'Maharashtra',
@@ -76,33 +94,39 @@ async function seed(): Promise<void> {
     }],
   })
 
-  const admin = await upsert(User, { email: DEMO_EMAIL }, {
-    name: 'Ananya Sharma',
-    email: DEMO_EMAIL,
-    phone: '+91 90000 00002',
-    password,
-    roles: ['clinic-admin'],
-    clinic: clinic._id,
-    gender: 'Female',
-    bloodGroup: 'O+',
-    deletedAt: null,
-  })
+  if (!clinic) throw new Error('Unable to find or create a clinic for the demo data')
+
+  const admin = targetAccount
+    ? await User.findByIdAndUpdate(targetAccount._id, { $set: { clinic: clinic._id } }, { new: true })
+    : await upsert(User, { email: DEMO_EMAIL }, {
+        name: 'Ananya Sharma',
+        email: DEMO_EMAIL,
+        phone: '+91 90000 00002',
+        password,
+        roles: ['clinic-admin'],
+        clinic: clinic._id,
+        gender: 'Female',
+        bloodGroup: 'O+',
+        deletedAt: null,
+      })
+
+  if (!admin) throw new Error('Unable to attach the target account to the demo clinic')
 
   const doctorData = [
     {
-      name: 'Dr. Arjun Mehta', email: 'arjun.mehta@demo.prevacare.in', phone: '+91 90000 00011',
+      name: 'Dr. Arjun Mehta', email: accountScopedEmail('arjun.mehta@demo.prevacare.in'), phone: '+91 90000 00011',
       gender: 'Male', bloodGroup: 'B+', experience: 12,
       bio: 'Consultant physician focused on diabetes, hypertension, and preventive medicine.',
       specializations: ['General Medicine', 'Diabetology'], degrees: ['MBBS', 'MD (Medicine)'],
     },
     {
-      name: 'Dr. Kavya Iyer', email: 'kavya.iyer@demo.prevacare.in', phone: '+91 90000 00012',
+      name: 'Dr. Kavya Iyer', email: accountScopedEmail('kavya.iyer@demo.prevacare.in'), phone: '+91 90000 00012',
       gender: 'Female', bloodGroup: 'A+', experience: 9,
       bio: 'Paediatrician providing newborn, child health, and vaccination care.',
       specializations: ['Paediatrics'], degrees: ['MBBS', 'DCH', 'DNB (Paediatrics)'],
     },
     {
-      name: 'Dr. Rohan Kulkarni', email: 'rohan.kulkarni@demo.prevacare.in', phone: '+91 90000 00013',
+      name: 'Dr. Rohan Kulkarni', email: accountScopedEmail('rohan.kulkarni@demo.prevacare.in'), phone: '+91 90000 00013',
       gender: 'Male', bloodGroup: 'AB+', experience: 15,
       bio: 'Orthopaedic consultant specialising in sports injuries and joint care.',
       specializations: ['Orthopaedics', 'Sports Medicine'], degrees: ['MBBS', 'MS (Orthopaedics)'],
@@ -130,8 +154,8 @@ async function seed(): Promise<void> {
   }
 
   const staffData = [
-    { name: 'Neha Patil', email: 'neha.patil@demo.prevacare.in', phone: '+91 90000 00021', gender: 'Female', degree: 'B.Sc Nursing' },
-    { name: 'Vikram Singh', email: 'vikram.singh@demo.prevacare.in', phone: '+91 90000 00022', gender: 'Male', degree: 'Diploma in Medical Laboratory Technology' },
+    { name: 'Neha Patil', email: accountScopedEmail('neha.patil@demo.prevacare.in'), phone: '+91 90000 00021', gender: 'Female', degree: 'B.Sc Nursing' },
+    { name: 'Vikram Singh', email: accountScopedEmail('vikram.singh@demo.prevacare.in'), phone: '+91 90000 00022', gender: 'Male', degree: 'Diploma in Medical Laboratory Technology' },
   ]
   const staff: any[] = []
   for (const item of staffData) {
@@ -146,14 +170,14 @@ async function seed(): Promise<void> {
   }
 
   const patientData = [
-    { name: 'Aarav Deshmukh', email: 'aarav.deshmukh@demo.prevacare.in', phone: '+91 90000 00101', gender: 'Male', bloodGroup: 'B+', age: 38, triage: 'follow-up', bp: '138/88', weight: 82, height: 176, pulse: 78, temp: 98.4, hba1c: 7.1, glucose: 146, spo2: 98, note: 'Type 2 diabetes; quarterly HbA1c review.' },
-    { name: 'Meera Nair', email: 'meera.nair@demo.prevacare.in', phone: '+91 90000 00102', gender: 'Female', bloodGroup: 'O+', age: 45, triage: 'normal', bp: '126/82', weight: 64, height: 162, pulse: 74, temp: 98.2, hba1c: 5.6, glucose: 101, spo2: 99, note: 'Annual preventive health check.' },
-    { name: 'Ishaan Verma', email: 'ishaan.verma@demo.prevacare.in', phone: '+91 90000 00103', gender: 'Male', bloodGroup: 'A+', age: 8, triage: 'normal', bp: '104/68', weight: 27, height: 130, pulse: 88, temp: 99.1, hba1c: 5.2, glucose: 92, spo2: 99, note: 'Seasonal allergy and vaccination review.' },
-    { name: 'Sanya Gupta', email: 'sanya.gupta@demo.prevacare.in', phone: '+91 90000 00104', gender: 'Female', bloodGroup: 'AB+', age: 29, triage: 'follow-up', bp: '118/76', weight: 58, height: 165, pulse: 72, temp: 98.3, hba1c: 5.4, glucose: 96, spo2: 99, note: 'Follow-up after ankle sprain.' },
-    { name: 'Rajesh Yadav', email: 'rajesh.yadav@demo.prevacare.in', phone: '+91 90000 00105', gender: 'Male', bloodGroup: 'O-', age: 56, triage: 'follow-up', bp: '152/94', weight: 86, height: 171, pulse: 82, temp: 98.6, hba1c: 6.2, glucose: 118, spo2: 97, note: 'Hypertension; monitor home BP readings.' },
-    { name: 'Fatima Khan', email: 'fatima.khan@demo.prevacare.in', phone: '+91 90000 00106', gender: 'Female', bloodGroup: 'B-', age: 34, triage: 'normal', bp: '112/74', weight: 61, height: 160, pulse: 76, temp: 98.8, hba1c: 5.3, glucose: 94, spo2: 98, note: 'Recurrent migraine evaluation.' },
-    { name: 'Aditya Joshi', email: 'aditya.joshi@demo.prevacare.in', phone: '+91 90000 00107', gender: 'Male', bloodGroup: 'A-', age: 42, triage: 'emergency', bp: '146/90', weight: 79, height: 174, pulse: 96, temp: 100.2, hba1c: 5.8, glucose: 109, spo2: 96, note: 'Acute fever with dehydration; same-day review.' },
-    { name: 'Lakshmi Reddy', email: 'lakshmi.reddy@demo.prevacare.in', phone: '+91 90000 00108', gender: 'Female', bloodGroup: 'O+', age: 67, triage: 'follow-up', bp: '134/84', weight: 68, height: 156, pulse: 80, temp: 98.5, hba1c: 6.6, glucose: 128, spo2: 97, note: 'Osteoarthritis and pre-diabetes follow-up.' },
+    { name: 'Aarav Deshmukh', email: accountScopedEmail('aarav.deshmukh@demo.prevacare.in'), phone: '+91 90000 00101', gender: 'Male', bloodGroup: 'B+', age: 38, triage: 'follow-up', bp: '138/88', weight: 82, height: 176, pulse: 78, temp: 98.4, hba1c: 7.1, glucose: 146, spo2: 98, note: 'Type 2 diabetes; quarterly HbA1c review.' },
+    { name: 'Meera Nair', email: accountScopedEmail('meera.nair@demo.prevacare.in'), phone: '+91 90000 00102', gender: 'Female', bloodGroup: 'O+', age: 45, triage: 'normal', bp: '126/82', weight: 64, height: 162, pulse: 74, temp: 98.2, hba1c: 5.6, glucose: 101, spo2: 99, note: 'Annual preventive health check.' },
+    { name: 'Ishaan Verma', email: accountScopedEmail('ishaan.verma@demo.prevacare.in'), phone: '+91 90000 00103', gender: 'Male', bloodGroup: 'A+', age: 8, triage: 'normal', bp: '104/68', weight: 27, height: 130, pulse: 88, temp: 99.1, hba1c: 5.2, glucose: 92, spo2: 99, note: 'Seasonal allergy and vaccination review.' },
+    { name: 'Sanya Gupta', email: accountScopedEmail('sanya.gupta@demo.prevacare.in'), phone: '+91 90000 00104', gender: 'Female', bloodGroup: 'AB+', age: 29, triage: 'follow-up', bp: '118/76', weight: 58, height: 165, pulse: 72, temp: 98.3, hba1c: 5.4, glucose: 96, spo2: 99, note: 'Follow-up after ankle sprain.' },
+    { name: 'Rajesh Yadav', email: accountScopedEmail('rajesh.yadav@demo.prevacare.in'), phone: '+91 90000 00105', gender: 'Male', bloodGroup: 'O-', age: 56, triage: 'follow-up', bp: '152/94', weight: 86, height: 171, pulse: 82, temp: 98.6, hba1c: 6.2, glucose: 118, spo2: 97, note: 'Hypertension; monitor home BP readings.' },
+    { name: 'Fatima Khan', email: accountScopedEmail('fatima.khan@demo.prevacare.in'), phone: '+91 90000 00106', gender: 'Female', bloodGroup: 'B-', age: 34, triage: 'normal', bp: '112/74', weight: 61, height: 160, pulse: 76, temp: 98.8, hba1c: 5.3, glucose: 94, spo2: 98, note: 'Recurrent migraine evaluation.' },
+    { name: 'Aditya Joshi', email: accountScopedEmail('aditya.joshi@demo.prevacare.in'), phone: '+91 90000 00107', gender: 'Male', bloodGroup: 'A-', age: 42, triage: 'emergency', bp: '146/90', weight: 79, height: 174, pulse: 96, temp: 100.2, hba1c: 5.8, glucose: 109, spo2: 96, note: 'Acute fever with dehydration; same-day review.' },
+    { name: 'Lakshmi Reddy', email: accountScopedEmail('lakshmi.reddy@demo.prevacare.in'), phone: '+91 90000 00108', gender: 'Female', bloodGroup: 'O+', age: 67, triage: 'follow-up', bp: '134/84', weight: 68, height: 156, pulse: 80, temp: 98.5, hba1c: 6.6, glucose: 128, spo2: 97, note: 'Osteoarthritis and pre-diabetes follow-up.' },
   ]
 
   const patients: any[] = []
@@ -267,8 +291,9 @@ async function seed(): Promise<void> {
     const patient = patients[Number(appointmentSpecs[4 + index][0])]
     const total = invoiceAmounts[index]
     const paid = index === 2 ? 1000 : total
+    const invoiceId = `DEMO-${recordNamespace}INV-${String(index + 1).padStart(4, '0')}`
     const invoice = await upsert(Invoice, { appointment_id: appointment._id }, {
-      invoice_id: `DEMO-INV-${String(index + 1).padStart(4, '0')}`,
+      invoice_id: invoiceId,
       appointment_id: appointment._id,
       patient_id: patient.user._id,
       clinic_id: clinic._id,
@@ -287,7 +312,7 @@ async function seed(): Promise<void> {
     })
     await upsert(InvoicePayment, { invoice_id: invoice._id }, {
       invoice_id: invoice._id, mode: index % 2 === 0 ? 'UPI' : 'CASH', amount: paid,
-      paid_on: appointment.appointmentTime, reference_id: `DEMO-PAY-${index + 1}`,
+      paid_on: appointment.appointmentTime, reference_id: `DEMO-${recordNamespace}PAY-${index + 1}`,
       notes: 'Synthetic demo payment',
     })
     invoices.push(invoice)
@@ -299,12 +324,13 @@ async function seed(): Promise<void> {
     const doctorIndex = Number(appointmentSpecs[4 + index][1])
     const patient = patients[patientIndex]
     const doctor = doctors[doctorIndex]
-    await upsert(EPrescription, { prescriptionID: `DEMO-RX-${String(index + 1).padStart(3, '0')}` }, {
+    const prescriptionId = `DEMO-${recordNamespace}RX-${String(index + 1).padStart(3, '0')}`
+    await upsert(EPrescription, { prescriptionID: prescriptionId }, {
       patient: patient.user._id,
       doctor: doctor.user._id,
       clinic: clinic._id,
       date: appointment.appointmentTime,
-      prescriptionID: `DEMO-RX-${String(index + 1).padStart(3, '0')}`,
+      prescriptionID: prescriptionId,
       sx: index === 0 ? 'Headache and elevated home blood pressure readings' : index === 1 ? 'Throbbing headache with nausea' : 'Fever, fatigue, and reduced oral intake',
       vitals: { BP: patient.bp, PR: String(patient.pulse), SpO2: String(patient.spo2) },
       dx: [{ diagnosisName: appointment.diagnosis, dateOfDiagnosis: appointment.appointmentTime }],
@@ -374,10 +400,11 @@ async function seed(): Promise<void> {
     instructions: 'Carry previous prescriptions and seven-day home BP log.', referralDate: at(-1),
   })
 
-  await upsert(Certificate, { clinicId: clinic._id, patientId: patients[6].user._id, patientIdString: 'DEMO-PAT-007' }, {
+  const certificatePatientId = `DEMO-${recordNamespace}PAT-007`
+  await upsert(Certificate, { clinicId: clinic._id, patientId: patients[6].user._id, patientIdString: certificatePatientId }, {
     patientId: patients[6].user._id, clinicId: clinic._id, doctorId: doctors[0].user._id,
     certificateType: 'sickness', patientName: patients[6].name, patientAge: patients[6].age,
-    patientGender: patients[6].gender, patientIdString: 'DEMO-PAT-007',
+    patientGender: patients[6].gender, patientIdString: certificatePatientId,
     doctorName: doctors[0].user.name, doctorQualification: 'MBBS, MD (Medicine)', doctorRegNumber: 'MMC-DEMO-10234',
     clinicName: clinic.name, clinicAddress: '18, Baner Road, Pune, Maharashtra 411045',
     clinicPhone: clinic.phone, clinicEmail: clinic.email,
@@ -410,7 +437,7 @@ async function seed(): Promise<void> {
   const notificationData = [
     ['Today\'s appointments', 'Three patient appointments are scheduled for today.', 'appointment', false],
     ['Low stock alert', 'Disposable Syringe 5 ml and Sterile Gauze Pack need restocking.', 'inventory', false],
-    ['Payment received', 'A UPI payment of ₹950 was recorded for DEMO-INV-0001.', 'billing', true],
+    ['Payment received', `A UPI payment of ₹950 was recorded for DEMO-${recordNamespace}INV-0001.`, 'billing', true],
     ['Referral created', 'Rajesh Yadav has been referred for a cardiology opinion.', 'referral', true],
   ] as const
   for (const [title, message, type, isRead] of notificationData) {
@@ -422,8 +449,8 @@ async function seed(): Promise<void> {
 
   console.log('\nDemo data is ready.')
   console.log(`Clinic: ${clinic.name}`)
-  console.log(`Login:  ${DEMO_EMAIL}`)
-  console.log(`Password: ${DEMO_PASSWORD}`)
+  console.log(`Login:  ${targetAccountEmail || DEMO_EMAIL}`)
+  console.log(targetAccount ? 'Existing account password was not changed.' : `Password: ${DEMO_PASSWORD}`)
   console.log(`Created/updated: ${doctors.length} doctors, ${staff.length} staff, ${patients.length} patients, ${appointments.length} appointments, ${invoices.length} invoices.`)
 }
 
